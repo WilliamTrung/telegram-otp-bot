@@ -1,0 +1,30 @@
+# Environment variables (contains secrets)
+.env
+.env.local
+.env.*.local
+
+# Local storage database folder
+data/
+
+# Compiled Go binaries
+/bot
+/bot.exe
+*.exe
+*.test
+*.prof
+
+# Temp/atomic write files
+*.tmp
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# IDE and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

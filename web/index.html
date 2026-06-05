@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Secure Telegram Deep Link Verification Gateway and Developer Portal.">
+    <title>Verification Gateway - Developer Console</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Background Accents -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fa-solid fa-shield-halved logo-icon"></i>
+                <span class="logo-text">TG-Auth</span>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" id="nav-btn-register" onclick="switchTab('tab-register')">
+                    <i class="fa-solid fa-key"></i> Client Keys
+                </button>
+                <button class="nav-btn" id="nav-btn-sandbox" onclick="switchTab('tab-sandbox')">
+                    <i class="fa-solid fa-vial"></i> Sandbox
+                </button>
+                <button class="nav-btn" id="nav-btn-docs" onclick="switchTab('tab-docs')">
+                    <i class="fa-solid fa-book"></i> API Docs
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-badge online">
+                    <span class="pulse-dot"></span>
+                    Gateway Active
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-title-container">
+                    <h1 id="page-title">Developer Console</h1>
+                    <p class="header-subtitle">Zero-cost deep-linked Telegram authentication gateway</p>
+                </div>
+                <div class="version-badge">v1.0.0</div>
+            </header>
+
+            <!-- TAB 1: CLIENT REGISTRATION -->
+            <section class="tab-pane active" id="tab-register">
+                <div class="card grid-2">
+                    <div class="form-container">
+                        <h2>Register New Client</h2>
+                        <p class="card-desc">Generate credentials to authorize your external application with the gateway.</p>
+                        
+                        <div class="form-group">
+                            <label for="client-name">Application Name</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-laptop-code input-icon"></i>
+                                <input type="text" id="client-name" placeholder="e.g. Acme Web App" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <button id="btn-register" class="btn btn-primary" onclick="registerClient()">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Credentials
+                        </button>
+                    </div>
+                    <div class="info-card">
+                        <h3><i class="fa-solid fa-circle-info"></i> Gateway Authentication</h3>
+                        <p>Credentials allow your service to initiate user verification sessions via the Go HTTP API.</p>
+                        <ul>
+                            <li><strong>Client ID</strong>: Unique identifier for your registered application.</li>
+                            <li><strong>API Key</strong>: Used as a Bearer Token in authorization headers. Keep this secret.</li>
+                        </ul>
+                        <div class="security-warning">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            Never share API keys or commit them to public version control repositories.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generated Credentials Output Card -->
+                <div class="card hidden" id="credentials-card">
+                    <div class="credentials-header">
+                        <h2>Client Credentials</h2>
+                        <span class="badge success-badge">Generated Successfully</span>
+                    </div>
+                    
+                    <div class="credentials-row">
+                        <div class="field-label">CLIENT ID</div>
+                        <div class="code-box">
+                            <span id="display-client-id" class="code-text"></span>
+                            <button class="copy-btn" onclick="copyToClipboard('display-client-id', this)">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="credentials-row">
+                        <div class="field-label">API KEY (BEARER TOKEN)</div>
+                        <div class="code-box">
+                            <span id="display-api-key" class="code-text"></span>
+                            <button class="copy-btn" onclick="copyToClipboard('display-api-key', this)">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: SANDBOX SIMULATOR -->
+            <section class="tab-pane" id="tab-sandbox">
+                <div class="grid-layout">
+                    <!-- Config Column -->
+                    <div class="card">
+                        <h2>Initiate Sandbox Session</h2>
+                        <p class="card-desc">Simulate a client request to test authorization flow and webhooks.</p>
+                        
+                        <div class="form-group">
+                            <label for="sandbox-api-key">API Key (Bearer)</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-key input-icon"></i>
+                                <input type="text" id="sandbox-api-key" placeholder="vkey_...">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sandbox-callback">Callback URL (Webhook)</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-link input-icon"></i>
+                                <input type="url" id="sandbox-callback" placeholder="e.g. http://localhost:9090/webhook">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sandbox-user-ref">User Reference</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-user-tag input-icon"></i>
+                                <input type="text" id="sandbox-user-ref" value="user_sandbox_99">
+                            </div>
+                        </div>
+
+                        <button id="btn-initiate" class="btn btn-primary btn-block" onclick="initiateVerification()">
+                            <i class="fa-solid fa-rocket"></i> Initiate Verification
+                        </button>
+                    </div>
+
+                    <!-- Status Monitor Column -->
+                    <div class="card flex-col align-center justify-center text-center relative" id="sandbox-status-card">
+                        <!-- Initial state -->
+                        <div id="status-state-idle" class="status-state">
+                            <div class="status-icon-glow">
+                                <i class="fa-solid fa-shield-halved"></i>
+                            </div>
+                            <h3>Awaiting Verification Request</h3>
+                            <p>Configure parameters on the left and click "Initiate Verification" to start.</p>
+                        </div>
+
+                        <!-- Waiting State -->
+                        <div id="status-state-waiting" class="status-state hidden">
+                            <div class="pulse-loader"></div>
+                            <h3>Awaiting Telegram Verification</h3>
+                            <p>Open the verification link or scan the QR code to proceed.</p>
+                            
+                            <div class="link-display">
+                                <a id="telegram-link-btn" href="#" target="_blank" class="btn btn-tg">
+                                    <i class="fa-brands fa-telegram"></i> Open in Telegram
+                                </a>
+                            </div>
+
+                            <div class="qr-container-wrapper">
+                                <div id="qr-placeholder" class="qr-code">
+                                    <i class="fa-solid fa-qrcode"></i>
+                                    <span>Generating QR...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="token-expiry">
+                                Session Token: <code id="display-session-token">auth_...</code><br>
+                                Expires in <span id="expiry-timer">5:00</span>
+                            </div>
+                        </div>
+
+                        <!-- Success State -->
+                        <div id="status-state-success" class="status-state hidden">
+                            <div class="success-checkmark">
+                                <div class="check-icon">
+                                    <span class="icon-line line-tip"></span>
+                                    <span class="icon-line line-long"></span>
+                                    <div class="icon-circle"></div>
+                                    <div class="icon-fix"></div>
+                                </div>
+                            </div>
+                            <h3 class="success-title">Verification Successful</h3>
+                            <p>Telegram session authorized and verified successfully!</p>
+
+                            <div class="user-details-card">
+                                <div class="details-row">
+                                    <span>Chat ID:</span>
+                                    <strong id="success-chat-id">-</strong>
+                                </div>
+                                <div class="details-row">
+                                    <span>Username:</span>
+                                    <strong id="success-username">-</strong>
+                                </div>
+                                <div class="details-row">
+                                    <span>First Name:</span>
+                                    <strong id="success-first-name">-</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation Live Logs Console -->
+                <div class="card mt-2 hidden" id="console-card">
+                    <div class="console-header">
+                        <h3><i class="fa-solid fa-terminal"></i> Verification Sandbox Terminal Logs</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="clearLogs()">Clear Logs</button>
+                    </div>
+                    <div class="console-body" id="console-logs">
+                        <!-- Dynamic logs here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: API DOCUMENTATION -->
+            <section class="tab-pane" id="tab-docs">
+                <div class="card">
+                    <h2>Integration Guide</h2>
+                    <p class="card-desc">Follow these details to integrate the verification gateway into your own service backend.</p>
+
+                    <div class="api-method">
+                        <div class="method-tag method-post">POST</div>
+                        <div class="method-path">/api/verify/init</div>
+                    </div>
+                    <p>Initialize a new verification session. Returns a unique token and the Telegram redirection deep link.</p>
+
+                    <h4>Headers</h4>
+                    <pre><code>Authorization: Bearer &lt;YOUR_API_KEY&gt;
+Content-Type: application/json</code></pre>
+
+                    <h4>Request Body</h4>
+                    <pre><code>{
+  "callback_url": "https://your-service.com/api/webhook",
+  "user_reference": "user_id_101"
+}</code></pre>
+
+                    <h4>Response Payload</h4>
+                    <pre><code>{
+  "token": "auth_90a36bc8de...",
+  "telegram_link": "https://t.me/your_bot_username?start=auth_90a36bc8de...",
+  "expires_at": "2026-06-05T13:40:00Z"
+}</code></pre>
+
+                    <hr class="docs-divider">
+
+                    <div class="api-method">
+                        <div class="method-tag method-webhook">WEBHOOK</div>
+                        <div class="method-path">POST [callback_url]</div>
+                    </div>
+                    <p>When the user hits "START" in their Telegram app, the gateway processes the update and triggers a POST callback notification containing user details to the URL specified during initialization.</p>
+
+                    <h4>Webhook Payload</h4>
+                    <pre><code>{
+  "event": "verification.completed",
+  "token": "auth_90a36bc8de...",
+  "user_reference": "user_id_101",
+  "status": "VERIFIED",
+  "telegram": {
+    "chat_id": 98765432,
+    "username": "telegram_user",
+    "first_name": "John"
+  },
+  "timestamp": "2026-06-05T13:35:10Z"
+}</code></pre>
+
+                    <h4>Expected Response</h4>
+                    <p>Your webhook handler **MUST** return a <code>200 OK</code> status code. Any other status code or timeout will trigger the exponential backoff retry worker. If failures persist consecutively 5 times, the gateway's Circuit Breaker trips open for 15 seconds to prevent request flooding.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
