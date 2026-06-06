@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   gateway:
     build:
@@ -9,9 +7,13 @@ services:
     restart: unless-stopped
     ports:
       - "${PORT:-8080}:8080"
-    environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - PORT=8080
-      - DATA_FILE=/app/data/store.json
+    env_file:
+      - ${GATEWAY_ENV_FILE:-.env}
     volumes:
-      - ./data:/app/data
+      - ${GATEWAY_DATA_DIR:-./data}:/app/data
+    networks:
+      - proxy-net
+
+networks:
+  proxy-net:
+    external: true
