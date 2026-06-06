@@ -10,7 +10,8 @@ services:
     env_file:
       - ${GATEWAY_ENV_FILE:-.env}
     volumes:
-      - ${GATEWAY_DATA_DIR:-./data}:/app/data
+      - ${GATEWAY_DATA_DIR:-./data}/resources:/app/data
+      - ${GATEWAY_DATA_DIR:-./data}/logs:/app/logs
     networks:
       - proxy-net
 

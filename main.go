@@ -9,7 +9,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"telegram-sms-bot/pkg/storage"
@@ -46,7 +48,65 @@ type TelegramUserInfo struct {
 	FirstName string `json:"first_name"`
 }
 
+type DailyLogger struct {
+	mu         sync.Mutex
+	logDir     string
+	filePrefix string
+	fileExt    string
+	currentDay string
+	file       *os.File
+	out        io.Writer
+}
+
+func (l *DailyLogger) Write(p []byte) (n int, err error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	day := time.Now().Format("2006-01-02")
+	if day != l.currentDay || l.file == nil {
+		if l.file != nil {
+			l.file.Close()
+		}
+		if err := os.MkdirAll(l.logDir, 0755); err != nil {
+			return 0, err
+		}
+		filename := filepath.Join(l.logDir, fmt.Sprintf("%s-%s%s", l.filePrefix, day, l.fileExt))
+		f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return 0, err
+		}
+		l.file = f
+		l.currentDay = day
+	}
+
+	n, err = l.file.Write(p)
+	if err != nil {
+		return n, err
+	}
+	if l.out != nil {
+		_, _ = l.out.Write(p)
+	}
+	return n, nil
+}
+
 func main() {
+	// Set up logging to stdout and optionally a log file
+	logFile := os.Getenv("LOG_FILE")
+	if logFile != "" {
+		dir := filepath.Dir(logFile)
+		base := filepath.Base(logFile)
+		ext := filepath.Ext(base)
+		prefix := strings.TrimSuffix(base, ext)
+
+		logger := &DailyLogger{
+			logDir:     dir,
+			filePrefix: prefix,
+			fileExt:    ext,
+			out:        os.Stdout,
+		}
+		log.SetOutput(logger)
+	}
+
 	log.Println("Starting Telegram Verification Gateway...")
 
 	// 1. Read Environment Variables
