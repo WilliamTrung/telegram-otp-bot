@@ -140,6 +140,102 @@ When the user clicks "START" in Telegram, the gateway dispatches a `POST` reques
 
 ---
 
+## 🔄 Step-by-Step API Integration Walkthrough
+
+Below is a complete sequence of `curl` commands demonstrating the step-by-step API call flow from application registration to user verification.
+
+### Step 1: Register Your Application
+First, register your external application to obtain your unique Client ID and API Key (`vkey_...`).
+
+```bash
+curl -X POST http://localhost:8080/api/clients \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Client App"}'
+```
+
+**Expected Response:**
+```json
+{
+  "id": "cli_9f0a2d48",
+  "name": "My Client App",
+  "api_key": "vkey_cf5e6c7d8b9a0e...",
+  "created_at": "2026-06-06T07:00:00Z"
+}
+```
+
+### Step 2: Initialize a Verification Session
+When a user on your frontend initiates the verification flow, request a verification session from the gateway using your API Key. Pass your `callback_url` (where callbacks will be POSTed) and a unique `user_reference`.
+
+```bash
+curl -X POST http://localhost:8080/api/verify/init \
+  -H "Authorization: Bearer vkey_cf5e6c7d8b9a0e..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "callback_url": "https://your-service.com/webhook/verify",
+    "user_reference": "user_id_101"
+  }'
+```
+
+**Expected Response:**
+```json
+{
+  "token": "auth_90a36bc8de...",
+  "telegram_link": "https://t.me/your_bot_username?start=auth_90a36bc8de...",
+  "expires_at": "2026-06-06T07:05:00Z"
+}
+```
+
+### Step 3: Direct the User to Telegram
+Redirect your user to the `telegram_link` generated in Step 2.
+- When clicked, it will open the chat with your bot inside their Telegram app.
+- They will be prompted to click the **"START"** button.
+
+### Step 4: Handle the Verification Result
+
+#### Method A: Receive the Webhook (Recommended)
+Once the user clicks **"START"**, the bot registers the interaction and the gateway automatically dispatches a secure callback webhook POST to the `callback_url` you provided:
+
+```json
+{
+  "event": "verification.completed",
+  "token": "auth_90a36bc8de...",
+  "user_reference": "user_id_101",
+  "status": "VERIFIED",
+  "telegram": {
+    "chat_id": 98765432,
+    "username": "john_doe",
+    "first_name": "John"
+  },
+  "timestamp": "2026-06-06T07:01:10Z"
+}
+```
+*Your service **MUST** respond with an HTTP `200 OK` status to register delivery success.*
+
+#### Method B: Poll the Status API (Fallback)
+If your service has webhooks disabled or firewalled, you can check the session status by polling the verification endpoint:
+
+```bash
+curl http://localhost:8080/api/verify/status?token=auth_90a36bc8de...
+```
+
+**Expected Response:**
+```json
+{
+  "token": "auth_90a36bc8de...",
+  "client_id": "cli_9f0a2d48",
+  "callback_url": "https://your-service.com/webhook/verify",
+  "user_reference": "user_id_101",
+  "status": "VERIFIED",
+  "chat_id": 98765432,
+  "telegram_user": "john_doe",
+  "telegram_first": "John",
+  "created_at": "2026-06-06T07:00:00Z",
+  "expires_at": "2026-06-06T07:05:00Z"
+}
+```
+
+---
+
 ## 🛠️ Installation & Setup
 
 ### Prerequisites

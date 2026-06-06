@@ -14,7 +14,10 @@ services:
       - ${GATEWAY_DATA_DIR:-./data}/logs:/app/logs
     networks:
       - proxy-net
+      - db-net
 
 networks:
   proxy-net:
+    external: true
+  db-net:
     external: true
